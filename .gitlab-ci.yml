@@ -1,0 +1,42 @@
+stages:
+  - test
+  - deploy
+
+image: php:7.2
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+  - vendor/
+
+before_script:
+- apt update && apt install -y git
+- curl --show-error --silent https://getcomposer.org/installer | php
+- php bin/composer.phar install --no-scripts --no-progress
+
+test:unit:
+  stage: test
+  script:
+  - bin/phpunit tests/Unit
+
+test:integration:
+  stage: test
+  script:
+  - bin/phpunit tests/Integration
+
+test:functionnal:
+  stage: test
+  script: php vendor/bin/behat
+
+deploy:prod:
+  stage: deploy
+  image: ruby
+  before_script:
+  - gem install dpl
+  script:
+  - dpl --provider=heroku --app=$HEROKU_APP_NAME --api-key=$HEROKU_API_KEY
+  only:
+    - master
+  environment:
+    name: production
+    url: https://hidden-beyond-11011.herokuapp.com/

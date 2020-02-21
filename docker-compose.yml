@@ -1,0 +1,14 @@
+version: '3.6'
+services:
+  php:
+    build:
+      context: ./
+      target: php
+  nginx:
+    build:
+      context: ./
+      target: nginx
+    ports:
+      - '80:80'
+    depends_on:
+      - php
